@@ -37,11 +37,7 @@
         <form id="updateForm">
             <div class="mb-3">
                 <label for="username" class="form-label">이름</label>
-                <input type="text" class="form-control" id="username" name="username" required>
-            </div>
-            <div class="mb-3">
-                <label for="account" class="form-label">계정</label>
-                <input type="text" class="form-control" id="account" name="account" readonly>
+                <input type="text" class="form-control" id="username" name="username" required pattern="^[가-힣]+$" placeholder="한글로 입력하세요.">
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">이메일</label>
@@ -69,7 +65,6 @@
               .then(response => response.json())
               .then(data => {
                   document.getElementById('username').value = data.username;
-                  document.getElementById('account').value = data.account;
                   document.getElementById('email').value = data.email;
                   document.getElementById('phoneNumber').value = data.phoneNumber;
               })
@@ -92,6 +87,7 @@
               .then(response => response.text())
               .then(data => {
                   alert('정보가 성공적으로 수정되었습니다.');
+                  window.location.href = '/memberinfo';
                   })
               .catch(error => console.error('Error:', error));
           });

@@ -4,6 +4,8 @@ const session = require('express-session'); // 로그인 시 세션 필요
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto'); // 임시 비밀번호 생성용
+
 const mongoose = require('mongoose');
 const User = require('./models/member');
 
@@ -22,6 +24,7 @@ app.use(session({
     cookie: { secure: false } // HTTPS 사용 시 true로 설정
 }));
 
+//DB연결함수
 async function connectToDatabase() {
     try {
         await mongoose.connect(process.env.MONGO_URI);
@@ -49,7 +52,6 @@ function requireLogin(req, res, next) {
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
-
 
 // 회원가입 get
 app.get('/join', function(req, res) {
@@ -81,7 +83,7 @@ app.post('/send-verification-code', function(req, res) {
     const mailOptions = {
         from: process.env.NAVER_USER,
         to: email,
-        subject: '회원가입 인증 코드',
+        subject: '인증 코드',
         text: `인증 코드는 ${verificationCode} 입니다.`
     };
 
@@ -127,9 +129,8 @@ app.post('/register', async function(req, res) {
 
         const user = new User({
             username: req.body.username,
-            account: req.body.account, // 소문자로 변환하여 저장
-            password: hashedPassword,
             email: email,
+            password: hashedPassword,
             phoneNumber: req.body.phoneNumber
         });
 
@@ -138,14 +139,13 @@ app.post('/register', async function(req, res) {
 
         verifiedEmails.delete(email);
 
-        res.send('회원가입이 완료되었습니다.');
+        res.redirect("/");
 
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).send('회원가입 중 오류가 발생했습니다.');
     }
 });
-
 
 // 로그인 get
 app.get('/login', function(req, res) {
@@ -155,17 +155,18 @@ app.get('/login', function(req, res) {
 // 로그인 post
 app.post('/login', async function(req, res){
     console.log('POST /login request received');
-    const { account, password } = req.body; // 사용자 입력 추출
+    console.log('Request body:', req.body); // 요청 본문 로그 추가
+    const { email, password } = req.body; // 사용자 입력 추출
     try {
-        const user = await User.findOne({account});
+        const user = await User.findOne({email});
         if (!user) {
-            console.log(`User not found for account: ${account}`);
-            return res.status(401).send('사용자를 찾을 수 없습니다.');
+            console.log(`User not found for email: ${email}`);
+            return res.status(401).send('아이디 혹은 비밀번호가 잘못되었습니다.');
         }
 
         const match = await bcrypt.compare(password, user.password); // 비밀번호 확인
         if (!match) {
-            return res.status(401).send('비밀번호가 잘못되었습니다.');
+            return res.status(401).send('아이디 혹은 비밀번호가 잘못되었습니다.');
         }
 
         req.session.userId = user._id; // 세션에 사용자 ID 저장
@@ -187,6 +188,49 @@ app.get('/login-status', (req, res) => {
     }
   });
 
+
+//비밀번호 발급 get
+app.get('/forgot-password',async function(req,res){
+    res.sendFile(__dirname+'/views/reissuePass.html');
+});
+
+// 비밀번호 발급 post
+app.post('/forgot-password', async function(req, res) {
+    console.log('POST /forgot-password request received');
+    const email = req.body.email;
+
+    if (!verifiedEmails.has(email)) {
+        return res.status(400).send('이메일 인증이 완료되지 않았습니다.');
+    }
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            console.log(`User not found for email: ${email}`);
+            return res.status(401).send('존재하지 않는 계정입니다.');
+        }
+
+        const temporaryPassword = crypto.randomBytes(3).toString('hex'); // 6자리 임시 비밀번호
+        console.log(`Temporary password generated: ${temporaryPassword}`);
+
+        // 비밀번호 암호화 추가 (예: bcrypt 사용)
+        const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+        user.password = hashedPassword;
+
+        await user.save();
+        console.log(`Temporary password saved for user: ${email}`);
+
+        res.json({ temporaryPassword: temporaryPassword }); // JSON 형식으로 응답
+
+        verifiedEmails.delete(email);
+
+    } catch (error) {
+        console.error('Error during password reissue:', error);
+        res.status(500).send('비밀번호 재발급 중 오류가 발생했습니다.');
+    }
+});
+
+
 // 로그아웃 라우트
 app.get('/logout', requireLogin,(req, res) => {
     req.session.destroy(err => { //세션 종료.
@@ -197,7 +241,6 @@ app.get('/logout', requireLogin,(req, res) => {
       console.log('logout successfully');
     });
   });
-
 
 //사용자 데이터 보기
 app.get('/memberinfo', requireLogin, function(req, res){
@@ -223,7 +266,7 @@ app.get('/memberinfo/memberupdate', requireLogin, async function(req, res){
 // 사용자 정보 제공
 app.get('/userinfo', requireLogin, async function(req, res) {
     try {
-        const user = await User.findById(req.session.userId).select('username account email phoneNumber');
+        const user = await User.findById(req.session.userId).select('username email phoneNumber');
         if (!user) {
             return res.status(404).send('사용자를 찾을 수 없습니다.');
         }

@@ -34,12 +34,19 @@
 
         <div class="mb-3">
           <label for="username" class="form-label">이름</label>
-          <input type="text" class="form-control" id="username" name="username" required>
+          <input type="text" class="form-control" id="username" name="username" required pattern="^[가-힣]+$" placeholder="한글로 입력하세요.">
         </div>
 
         <div class="mb-3">
-          <label for="account" class="form-label">계정</label>
-          <input type="text" class="form-control" id="account" name="account" required>
+          <label for="email" class="form-label">이메일(계정)</label>
+          <input type="email" class="form-control" id="email" name="email" required>
+          <button type="button" class="btn btn-secondary mt-2" id="sendCodeButton">인증 코드 전송</button>
+        </div>
+
+        <div class="mb-3">
+          <label for="verification-code" class="form-label">인증 코드</label>
+          <input type="text" class="form-control" id="verification-code" name="verification-code" required>
+          <button type="button" class="btn btn-secondary mt-2" id="verifyCodeButton">인증 코드 확인</button>
         </div>
 
         <div class="mb-3">
@@ -52,17 +59,7 @@
           <input type="password" class="form-control" id="confirm-password" name="confirm-password" required>
         </div>
 
-        <div class="mb-3">
-          <label for="email" class="form-label">이메일</label>
-          <input type="email" class="form-control" id="email" name="email" required>
-          <button type="button" class="btn btn-secondary mt-2" id="sendCodeButton">인증 코드 전송</button>
-        </div>
-
-        <div class="mb-3">
-          <label for="verification-code" class="form-label">인증 코드</label>
-          <input type="text" class="form-control" id="verification-code" name="verification-code" required>
-          <button type="button" class="btn btn-secondary mt-2" id="verifyCodeButton">인증 코드 확인</button>
-        </div>
+        
 
         <div class="mb-3">
           <label for="phoneNumber" class="form-label">전화번호</label>

@@ -3,9 +3,15 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: true
+        required: true,
+        validate: {
+            validator: function(v) {
+                return /^[가-힣]+$/.test(v); // 한글만 허용
+            },
+            message: props => `${props.value}는 한글만 입력 가능합니다.`
+        }
     },
-    account: {
+    email: {
         type: String,
         required: true,
         unique: true
@@ -13,11 +19,6 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true
     },
     phoneNumber: {
         type: String,

@@ -32,8 +32,8 @@
     <h2>로그인</h2>
     <form id="loginForm">
         <div class="mb-3">
-          <label for="account" class="form-label">계정</label>
-          <input type="text" class="form-control" id="account" name="account" placeholder="아이디를 입력하세요" required>
+          <label for="email" class="form-label">이메일(계정)</label>
+          <input type="text" class="form-control" id="email" name="email" placeholder="이메일 입력하세요" required>
         </div>
         <div class="mb-3">
           <label for="password" class="form-label">비밀번호</label>
@@ -50,7 +50,7 @@
   <script>
     document.getElementById('loginForm').addEventListener('submit', function(event) {
       event.preventDefault();
-      const account = document.getElementById('account').value;
+      const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
       fetch('/login', {
@@ -58,7 +58,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ account, password })
+        body: JSON.stringify({ email, password })
       })
       .then(response => response.text())
       .then(message => {
