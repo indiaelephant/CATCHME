@@ -188,7 +188,6 @@ app.get('/login-status', (req, res) => {
     }
   });
 
-
 //비밀번호 발급 get
 app.get('/forgot-password',async function(req,res){
     res.sendFile(__dirname+'/views/reissuePass.html');
@@ -230,7 +229,6 @@ app.post('/forgot-password', async function(req, res) {
     }
 });
 
-
 // 로그아웃 라우트
 app.get('/logout', requireLogin,(req, res) => {
     req.session.destroy(err => { //세션 종료.
@@ -242,13 +240,13 @@ app.get('/logout', requireLogin,(req, res) => {
     });
   });
 
-//사용자 데이터 보기
+//사용자 데이터 보기 -> 족압 데이터+사용자 정보 + 비밀번호 변경 페이지입니다
 app.get('/memberinfo', requireLogin, function(req, res){
     console.log('사용자 족압 데이터 보기');
     res.sendFile(__dirname + '/views/memberInfo.html');
 });
 
-// 개인정보 수정 페이지
+// 개인정보 수정 페이지 ->사용자 정보 수정 페이지. : 이건 전체 html틀을 보여줌. 아래 파일이 html내용을 채워넣음.
 app.get('/memberinfo/memberupdate', requireLogin, async function(req, res){
     console.log('개인정보수정');
     try {
@@ -263,7 +261,8 @@ app.get('/memberinfo/memberupdate', requireLogin, async function(req, res){
     }
 });
 
-// 사용자 정보 제공
+
+// 사용자 정보 제공 -> 이게 필요한 이유는 사용자 정보 수정페이지에서 기존의 값들을 불러오기 위함임. 사용자에게 자신의 정보를 보여줌.
 app.get('/userinfo', requireLogin, async function(req, res) {
     try {
         const user = await User.findById(req.session.userId).select('username email phoneNumber');
@@ -277,7 +276,7 @@ app.get('/userinfo', requireLogin, async function(req, res) {
     }
 });
 
-// 사용자 정보 업데이트
+// 사용자 정보 업데이트 -> 사용자가 수정한 내용을 받아와서 DB에 저장함.
 app.patch('/userinfo', requireLogin, async function(req, res) {
     try {
         const user = await User.findById(req.session.userId);
@@ -296,6 +295,40 @@ app.patch('/userinfo', requireLogin, async function(req, res) {
         res.status(500).send('서버 오류');
     }
 });
+
+//비밀번호 변경하기 페이지get
+app.get('/memberinfo/updatepassword',requireLogin,async function(req,res){
+    res.sendFile(__dirname + '/views/updatePassword.html');
+});
+
+// 비밀번호 변경하기 페이지 POST
+app.post('/memberinfo/updatepassword', requireLogin, async function (req, res) {
+    const { old_password, password } = req.body;
+
+    try {
+        const user = await User.findById(req.session.userId); // 로그인된 사용자 ID로 사용자 검색
+
+        // 기존 비밀번호가 일치하는지 확인
+        const isMatch = await bcrypt.compare(old_password, user.password);
+
+        if (!isMatch) {
+            return res.status(400).send('기존 비밀번호가 일치하지 않습니다.');
+        }
+
+        // 새 비밀번호 해싱
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // 데이터베이스에 새 비밀번호 저장
+        user.password = hashedPassword;
+        await user.save();
+        res.redirect('/'); // 홈 화면으로 리디렉션
+        
+    } catch (error) {
+        console.error('Error updating password:', error);
+        res.status(500).send('비밀번호 변경 중 오류가 발생했습니다.');
+    }
+});
+
 
 //회원 탈퇴 버튼 클릭시
 app.get('/memberdelete',requireLogin,async function (req,res) {
