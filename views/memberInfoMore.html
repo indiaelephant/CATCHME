@@ -3,35 +3,82 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>나의데이터/더보기/설정</title>
+    <title>나의데이터/더보기</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   </head>
   <body>
-    <h1>설정 화면입니다.</h1>
-    <p class="mt-3">
-      <button id="updateMemberButton" class="btn btn-primary">개인정보 수정</button>
-    </p>
-    <p class="mt-3">
-      <button id="updatePasswordButton" class="btn btn-primary">비밀번호 변경</button>
-    </p>
-    <p class="mt-3">
-      <button id="deleteMemberButton" class="btn btn-primary">회원탈퇴</button>
-    </p>
+    <div class="container mt-3">
+      <h1 class="mb-4">MoreFirstScreen</h1>
+
+      <h2 class="h5">기본 설정</h2>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="autoLoginSwitch">
+        <label class="form-check-label" for="autoLoginSwitch">자동 로그인</label>
+      </div>
+      <div class="form-check form-switch mb-4">
+        <input class="form-check-input" type="checkbox" id="notificationSwitch">
+        <label class="form-check-label" for="notificationSwitch">알림 설정</label>
+      </div>
+
+      <h2 class="h5">보호자 관리</h2>
+      <button id="guardianManagementButton" class="btn btn-light w-100 mb-3">보호자 관리</button>
+
+      <h2 class="h5">정보 수정</h2>
+      <button id="updateMemberButton" class="btn btn-light w-100 mb-3">사용자 정보 수정</button>
+      <button id="updatePasswordButton" class="btn btn-light w-100 mb-3">비밀번호 변경</button>
+
+      <h2 class="h5 text-danger">로그아웃</h2>
+      <button id="logoutButton" class="btn btn-light w-100 mb-3">로그아웃</button>
+
+      <h2 class="h5 text-danger">회원탈퇴</h2>
+      <button id="deleteMemberButton" class="btn btn-light w-100 mb-3">회원탈퇴</button>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     
     <script>
-      document.getElementById('updateMemberButton').addEventListener('click', function() {
-        window.location.href = '/memberinfo/more/update';
+      document.addEventListener('DOMContentLoaded', function() {
+        const autoLoginSwitch = document.getElementById('autoLoginSwitch');
+        
+        // 자동 로그인 상태 확인 및 스위치 설정
+        if (localStorage.getItem('autoLogin') === 'true') {
+          autoLoginSwitch.checked = true;
+        }
+
+        // 스위치 상태가 변경될 때 처리
+        autoLoginSwitch.addEventListener('change', function() {
+          if (autoLoginSwitch.checked) {
+            localStorage.setItem('autoLogin', 'true');
+          } else {
+            localStorage.removeItem('autoLogin');
+          }
+        });
+
+        // 각 버튼에 대한 페이지 이동 처리
+        document.getElementById('updateMemberButton').addEventListener('click', function() {
+          window.location.href = '/memberinfo/more/update';
+        });
+
+        document.getElementById('updatePasswordButton').addEventListener('click', function() {
+          window.location.href = '/memberinfo/more/updatepassword';
+        });
+
+        document.getElementById('deleteMemberButton').addEventListener('click', function() {
+          window.location.href = '/memberinfo/more/memberdelete';
+        });
+
+        document.getElementById('guardianManagementButton').addEventListener('click', function() {
+          // 보호자 관리 페이지로 이동 (현재는 기능 미구현)
+          alert("보호자 관리 기능은 아직 구현되지 않았습니다.");
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', function() {
+          // 로그아웃 처리 
+          window.location.href = '/logout';
+        });
       });
-      document.getElementById('updatePasswordButton').addEventListener('click', function() {
-        window.location.href = '/memberinfo/more/updatepassword';
-      });
-      document.getElementById('deleteMemberButton').addEventListener('click', function() {
-        window.location.href = '/memberinfo/more/memberdelete';
-      });    
-  </script>
-  
+    </script>
   </body>
 </html>
